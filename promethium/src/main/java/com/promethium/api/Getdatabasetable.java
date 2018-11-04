@@ -288,7 +288,7 @@ public class Getdatabasetable {
 		
         try {        	
             String[] types = {"TABLE"};
-            rs = metadata.getTables(null, null, "%", types);
+             rs = metadata.getTables(null, null, "%", types);
             while (rs.next()) {
             	
             	Tables table = new Tables();
