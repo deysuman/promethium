@@ -1,4 +1,4 @@
-package com.promethium.helper;
+package com.promethium.models;
 
 public class ConnectionErrorResponse {
 

@@ -14,11 +14,20 @@ import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
 import java.sql.*;
-import com.promethium.helper.ConnectionErrorResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import com.promethium.helper.Constants;
-import com.promethium.helper.ResponseError;
 import com.promethium.helper.Utils;
+import com.promethium.models.ColumnSchema;
+import com.promethium.models.ConnectionErrorResponse;
+import com.promethium.models.Database;
+import com.promethium.models.ResponseError;
+import com.promethium.models.ResponseSuccess;
+import com.promethium.models.Tables;
 import com.promethium.sql.MysqlCon;
+import com.promethium.sql.OracleCon;
 
 @RestController
 public class Getdatabasetable {
@@ -26,7 +35,7 @@ public class Getdatabasetable {
 	
 	private static boolean isRemote = true;
 	
-	private static int typeofDb = 0;
+	private static int typeofDb = 1;
 	// Import utils call and define globaly
 	@SuppressWarnings("unused")
 	private Utils utils = new Utils();
@@ -44,6 +53,8 @@ public class Getdatabasetable {
 	
 	private Gson gson = new Gson();
 	
+	private static List<Tables> table_list = new ArrayList<>();
+	
 	@SuppressWarnings("unused")
 	private static int error_point = 0;
 	
@@ -60,7 +71,7 @@ public class Getdatabasetable {
 		password = _password;
 		host = _host.toLowerCase();
 		
-		boolean validateDb = validateCredential("0",_dbName,dbport,_userName,_password,_host);
+		boolean validateDb = validateCredential("1",_dbName,dbport,_userName,_password,_host);
 		
 		if(!validateDb && isError) {
 			
@@ -76,8 +87,11 @@ public class Getdatabasetable {
 			
 			if(isConnected) {
 				
+				ResponseSuccess databaseMetaData = getDatabaseMetaData();
+				String sucessResults = gson.toJson(databaseMetaData); 
 				
-				getDatabaseMetaData();
+				return String.valueOf(sucessResults);
+				
 				
 			}
 			
@@ -94,7 +108,6 @@ public class Getdatabasetable {
 				
 			}
 			
-			return "Getting datas "  + typeofDb;
 			
 		}
 	}
@@ -176,32 +189,194 @@ public class Getdatabasetable {
 						
 			if (sqlConnection != null) {
 				
+				try {
+					metadata = sqlConnection.getMetaData();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				result = true;
 			}
 				
 			
 		}
+		
+		else if (typeofDb == 1) {
+					
+			OracleCon con = new OracleCon();
+			sqlConnection = con.makeconnection(dbName,dbPort,userName,password,host);
 			
+						
+			if (sqlConnection != null) {
+				
+				try {
+					metadata = sqlConnection.getMetaData();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				result = true;
+			}
+				
+			
+		}
+	
 		
 		return result;
 		
 	}
 	
-	protected void getDatabaseMetaData()
-    {
-        try {
+	
+	/**
+	 * Prints in the console the general metadata.
+	 * 
+	 * @throws SQLException
+	 */
+	protected ResponseSuccess getDatabaseMetaData()  {
+		
+		ResponseSuccess respone_success = new ResponseSuccess();
+		
+		try {
+			respone_success.setIs_error(false);
+			respone_success.setIs_result(true);
+			
+			
+			
+			Database database = new Database();
+			String url = metadata.getURL();
+			database.setDatabase_name(url.substring(url.lastIndexOf("/") + 1));
+			database.setDatabase_version(metadata.getDatabaseProductVersion());
+			database.setDatabase_jdbc_version(metadata.getDriverVersion());
+			database.setProduct_name(metadata.getDatabaseProductName());
+			database.setDriver_version(metadata.getDriverVersion());
+			
+			// Run the getDatabaseTableMetaData
+			
+			getDatabaseTableMetaData();
+			
+			database.setTables(table_list);
+			
+			
+			respone_success.setDatabase_details(database);
+				
+			
+		}
+		catch (SQLException e) {
+        	
+			respone_success.setIs_error(true);
+			respone_success.setIs_result(false);
+			
+        }
+		
+		return respone_success;
+	}
 
-        	metadata = sqlConnection.getMetaData();
+	
+	/**
+	 * 
+	 * @return null
+	 * @throws SQLException
+	 */
+	
+	protected void getDatabaseTableMetaData()
+    {		
+		table_list.clear();
+		
+		ResultSet rs = null;
+		
+        try {        	
             String[] types = {"TABLE"};
-            ResultSet rs = metadata.getTables(null, null, "%", types);
+            rs = metadata.getTables(null, null, "%", types);
             while (rs.next()) {
-                System.out.println(rs.getString("TABLE_NAME"));
+            	
+            	Tables table = new Tables();
+            	table.setTable_name(rs.getString("TABLE_NAME"));
+            	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+            	table_list.add(table);
+            	
             }
         } 
+        
+        
             catch (SQLException e) {
             	e.printStackTrace();
             }
+        
+        finally {
+	        try { rs.close(); } catch (Exception ignore) { }
+	    }
     }
+	
+	/**
+	 * Prints in the console the columns metadata, based in the Arraylist of
+	 * tables passed as parameter.
+	 * 
+	 * @param table_name
+	 * @throws SQLException
+	 * @return Arraylist with the columns
+	 */
+	
+	public static List<ColumnSchema> getColumnsMetadata(String actualTable) {
+		
+		ResultSet rs = null;
+		
+		List<ColumnSchema> column_list = new ArrayList<>();
+		
+		List<String> column_schema = new ArrayList<>();
+		
+		
+		try {
+			
+			rs = metadata.getColumns(null, null, actualTable, null);
+			
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			int columnCount = rsmd.getColumnCount();
+			
+			for (int i = 1; i <= columnCount; i++ ) {
+				
+				  String name = rsmd.getColumnName(i);
+				  
+				  column_schema.add(name);
+				  
+				  System.out.print(name + "\n");
+				  // Do stuff with name
+			}
+			
+			while (rs.next()) {
+				
+				ColumnSchema columns_schema = new ColumnSchema();
+				HashMap<String, String> newMap = new HashMap<String, String>();
+								
+				for (String schema_name : column_schema) {
+					
+					newMap.put(schema_name.toLowerCase(), rs.getString(schema_name));		
+							
+				}
+				
+				columns_schema.setCloumn_schema(newMap);
+				
+				column_list.add(columns_schema);
+				
+			}
+		
+		}
+		
+		catch (SQLException e) {
+         	e.printStackTrace();
+         }
+		
+		finally {
+	        try { rs.close(); } catch (Exception ignore) { }
+	    }
+		
+		
+		return column_list;
+		
+
+	}
 	
 	
 	

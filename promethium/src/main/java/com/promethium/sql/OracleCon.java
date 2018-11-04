@@ -1,22 +1,21 @@
 package com.promethium.sql;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
-import com.promethium.models.ConnectionErrorResponse;  
+import com.promethium.models.ConnectionErrorResponse;
 
+public class OracleCon {
 
-public class MysqlCon {	
-
-	
 	private static Connection connection = null;
 
 	public Connection makeconnection(String _dbName, String _dbPort, String _userName, String _password, String _host) {
 		
 		try{
 			
-			Class.forName("com.mysql.jdbc.Driver");  
+			Class.forName("oracle.jdbc.driver.OracleDriver");  
 			connection = DriverManager.getConnection(  
-			"jdbc:mysql://"+_host+":"+_dbPort+"/"+_dbName,_userName,_password);						
+					"jdbc:oracle:thin:@"+ _host +":"+ _dbPort +":"+_dbName , _userName, _password);						
 			
 		}
 		
@@ -33,5 +32,5 @@ public class MysqlCon {
 		return connection;
 		
 	}  
-			
+	
 }
