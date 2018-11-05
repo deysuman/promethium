@@ -16,7 +16,8 @@ public class MysqlCon {
 			
 			Class.forName("com.mysql.jdbc.Driver");  
 			connection = DriverManager.getConnection(  
-			"jdbc:mysql://"+_host+":"+_dbPort+"/"+_dbName,_userName,_password);						
+					"jdbc:mysql://"+_host+":" + _dbPort +"/"+ _dbName +"?autoReconnect=true&useSSL=false&" +
+                            "user="+ _userName +"&password=" + _password);						
 			
 		}
 		

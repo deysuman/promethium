@@ -1,6 +1,7 @@
 package com.promethium.api;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,7 +36,7 @@ public class Getdatabasetable {
 	
 	private static boolean isRemote = true;
 	
-	private static int typeofDb = 1;
+	private static int typeofDb = 0;
 	// Import utils call and define globaly
 	@SuppressWarnings("unused")
 	private Utils utils = new Utils();
@@ -59,11 +60,12 @@ public class Getdatabasetable {
 	private static int error_point = 0;
 	
 	String dbName,dbPort,userName,password,host = "";
+		
 	
 	@SuppressWarnings("unchecked")
 	@RequestMapping(path = "/api/getdbtable", method={RequestMethod.POST})
 	@ResponseStatus(value=HttpStatus.OK)
-	public String Getdbtable(@RequestParam("dbname") String _dbName,@RequestParam("dbport") String dbport,@RequestParam("username") String _userName,@RequestParam("password") String _password,@RequestParam("host") String _host) {	
+	public String Getdbtable(@RequestParam("dbname") String _dbName,@RequestParam("dbport") String dbport,@RequestParam("username") String _userName,@RequestParam("password") String _password,@RequestParam("host") String _host,@RequestParam("dbtype") String dbtype) {	
 		
 		dbName = _dbName;
 		dbPort = dbport;
@@ -71,7 +73,15 @@ public class Getdatabasetable {
 		password = _password;
 		host = _host.toLowerCase();
 		
-		boolean validateDb = validateCredential("1",_dbName,dbport,_userName,_password,_host);
+		typeofDb = 0;
+		
+		if(Utils.isNumeric(dbtype)) {
+			
+			typeofDb = Integer.parseInt(dbtype);
+			
+		}
+		
+		boolean validateDb = validateCredential(typeofDb,_dbName,dbport,_userName,_password,_host);
 		
 		if(!validateDb && isError) {
 			
@@ -97,7 +107,7 @@ public class Getdatabasetable {
 			
 			else {
 				
-				//ConnectionErrorResponse connectionError = new ConnectionErrorResponse();
+				//***ConnectionErrorResponse connectionError = new ConnectionErrorResponse();
 				
 				_errorResult.setIs_error(true);
 				_errorResult.setError_msg(new ConnectionErrorResponse().getError_msg());
@@ -114,7 +124,7 @@ public class Getdatabasetable {
 	
 	
 
-	protected boolean validateCredential(String _typeOfDb,String _dbName, String _dbPort, String _userName, String _password, String _host) {
+	protected boolean validateCredential(Integer _typeOfDb,String _dbName, String _dbPort, String _userName, String _password, String _host) {
 			
 		
 		// Validate first the host address if host is ip address
@@ -162,6 +172,17 @@ public class Getdatabasetable {
 			
 		}		
 		
+		
+		// Getting any error of validPort
+		else if(!(_typeOfDb >= 1 && _typeOfDb <= 2) && !isError) {								
+			_errorResult.setIs_error(true);
+			_errorResult.setError_msg(constants.INVALID_DATASOURCE);
+			isError = true;
+			error_point = 3;		
+			
+		}		
+		
+		
 		else {			
 			_errorResult.setIs_error(false);
 			_errorResult.setError_msg("No erros are gretings");
@@ -169,6 +190,8 @@ public class Getdatabasetable {
 			error_point = 0;		
 			
 		}
+		System.out.print("Values");
+		System.out.print(String.valueOf(_typeOfDb));
 				
 		return isError ? false : true;
 		
@@ -181,7 +204,7 @@ public class Getdatabasetable {
 		
 		
 		// connection type Mysql
-		if (typeofDb == 0) {
+		if (typeofDb == 1) {
 			
 			MysqlCon con = new MysqlCon();
 			sqlConnection = con.makeconnection(dbName,dbPort,userName,password,host);
@@ -202,7 +225,7 @@ public class Getdatabasetable {
 			
 		}
 		
-		else if (typeofDb == 1) {
+		else if (typeofDb == 2) {
 					
 			OracleCon con = new OracleCon();
 			sqlConnection = con.makeconnection(dbName,dbPort,userName,password,host);

@@ -14,7 +14,7 @@ public class Utils {
 	private static final Pattern databaseName  = Pattern.compile("[0-9a-zA-Z$_]+");
 	
 	// Regex of Url	
-	private static final Pattern urlPattern = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+	private static final Pattern urlPattern = Pattern.compile("[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
 
 	
 	// Validate Ipv4
@@ -64,5 +64,18 @@ public class Utils {
 		
 	public static boolean validUrl(final String _url) {
 		return urlPattern.matcher(_url).matches();
+	}
+	
+	// Validate int
+	
+	/*
+	 * Require parameter are String 
+	 * return parameter are boolean
+	 * example data "1" is true
+	 */
+	
+	public static boolean isNumeric(String str)
+	{
+	  return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
 	}
 }
