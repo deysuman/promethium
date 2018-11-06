@@ -1,4 +1,4 @@
-package com.promethium.api;
+package com.promethium.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +18,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import com.promethium.helper.Constants;
 import com.promethium.helper.Utils;
@@ -41,6 +42,11 @@ public class Getdatabasetable {
 	@SuppressWarnings("unused")
 	private Utils utils = new Utils();
 	
+	private static int tableLimit = -1;
+	
+	private static int tableCount = 0;
+	
+	private static int tableAvailable = 0;
 	
 	private boolean isError = false;
 	
@@ -65,7 +71,11 @@ public class Getdatabasetable {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(path = "/api/getdbtable", method={RequestMethod.POST})
 	@ResponseStatus(value=HttpStatus.OK)
-	public String Getdbtable(@RequestParam("dbname") String _dbName,@RequestParam("dbport") String dbport,@RequestParam("username") String _userName,@RequestParam("password") String _password,@RequestParam("host") String _host,@RequestParam("dbtype") String dbtype) {	
+	public String Getdbtable(@RequestParam("dbname") String _dbName,@RequestParam("dbport") String dbport,@RequestParam("username") String _userName,@RequestParam("password") String _password,@RequestParam("host") String _host,@RequestParam("dbtype") String dbtype,@RequestParam(value = "limit", required = false) String tablelimit) {	
+		
+		
+		
+		
 		
 		dbName = _dbName;
 		dbPort = dbport;
@@ -78,6 +88,16 @@ public class Getdatabasetable {
 		if(Utils.isNumeric(dbtype)) {
 			
 			typeofDb = Integer.parseInt(dbtype);
+			
+		}
+		
+		// Check is table limit parameter is have a value & is a numeric data type
+		
+		if (!tablelimit.isEmpty() && Utils.isNumeric(tablelimit)) {
+			
+			// We successfully find table limit parameter is have a value & is a numeric data type
+			
+			tableLimit = Integer.parseInt(tablelimit);								
 			
 		}
 		
@@ -280,7 +300,8 @@ public class Getdatabasetable {
 			getDatabaseTableMetaData();
 			
 			database.setTables(table_list);
-			
+			database.setTotal_table(tableAvailable);
+			database.setDisplay_table(tableCount);
 			
 			respone_success.setDatabase_details(database);
 				
@@ -306,18 +327,46 @@ public class Getdatabasetable {
 	protected void getDatabaseTableMetaData()
     {		
 		table_list.clear();
+		tableCount = 0;
 		
 		ResultSet rs = null;
 		
         try {        	
-            String[] types = {"TABLE"};
+             String[] types = {"TABLE"};
              rs = metadata.getTables(null, null, "%", types);
-            while (rs.next()) {
+            
+             while (rs.next()) {
             	
-            	Tables table = new Tables();
-            	table.setTable_name(rs.getString("TABLE_NAME"));
-            	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-            	table_list.add(table);
+            	 tableAvailable++;
+            	 
+            	// If we don't get any table limit 
+            	 
+            	if (tableLimit == -1) { 
+            	
+		        	Tables table = new Tables();
+		        	table.setTable_name(rs.getString("TABLE_NAME"));
+		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+		        	table_list.add(table);
+            	
+            	}
+            	
+            	// If we gate any table name
+            	
+            	else {
+            		
+            		if (tableCount <= tableLimit) {
+            			
+            			Tables table = new Tables();
+    		        	table.setTable_name(rs.getString("TABLE_NAME"));
+    		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+    		        	table_list.add(table);
+    		        	
+    		        	tableCount++;
+            			
+            		}
+            		
+            	}
+            	
             	
             }
         } 

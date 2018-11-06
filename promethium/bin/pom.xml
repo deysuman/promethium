@@ -69,26 +69,6 @@
         <version>11.2.0.3</version>
     </dependency>
     
-    <!-- <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-jdbc</artifactId>
-        <version>1.1.0-cdh5.8.0</version>
-        <exclusions>
-            <exclusion>
-                <groupId>org.eclipse.jetty.aggregate</groupId>
-                <artifactId>*</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency> -->
-    
-    <dependency>
-	    <groupId>org.apache.hive</groupId>
-	    <artifactId>hive-jdbc</artifactId>
-	    <version>1.0.0</version>
-	</dependency>
-	
-	    
-    
     <dependency>
     <groupId>org.json</groupId>
     <artifactId>json</artifactId>
@@ -99,40 +79,6 @@
 
 	<build>
 		<plugins>
-		<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
-				<version>1.2.2</version>
-				<configuration>
-					<repositoryLayout>flat</repositoryLayout>
-					<configurationSourceDirectory>src/main/config</configurationSourceDirectory>
-					<copyConfigurationDirectory>true</copyConfigurationDirectory>
-					<!-- Extra JVM arguments that will be included in the bin scripts -->
-					<extraJvmArguments>-Xms512m -Xmx1024m -Dhive.version=${hive.version}</extraJvmArguments>
-					<programs>
-						<program>
-							<mainClass>org.springframework.samples.hadoop.hive.HiveApp</mainClass>
-							<name>hiveApp</name>
-						</program>
-						<program>
-							<mainClass>org.springframework.samples.hadoop.hive.HiveClientApp</mainClass>
-							<name>hiveClientApp</name>
-						</program>
-						<program>
-							<mainClass>org.springframework.samples.hadoop.hive.HiveAppWithApacheLogs</mainClass>
-							<name>hiveAppWithApacheLogs</name>
-						</program>
-					</programs>
-				</configuration>
-				<executions>
-					<execution>
-						<id>package</id>
-						<goals>
-							<goal>assemble</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

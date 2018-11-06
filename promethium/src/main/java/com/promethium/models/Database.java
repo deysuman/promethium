@@ -15,6 +15,10 @@ public class Database {
 	
 	public String driver_version = "";
 	
+	public Integer total_table = 0;
+	
+	public Integer display_table = 0;
+	
 	public List<Tables> tables = new ArrayList<Tables>();
 
 	public String getDatabase_name() {
@@ -57,6 +61,22 @@ public class Database {
 		this.driver_version = driver_version;
 	}
 
+	public Integer getTotal_table() {
+		return total_table;
+	}
+
+	public void setTotal_table(Integer total_table) {
+		this.total_table = total_table;
+	}
+
+	public Integer getDisplay_table() {
+		return display_table;
+	}
+
+	public void setDisplay_table(Integer display_table) {
+		this.display_table = display_table;
+	}
+
 	public List<Tables> getTables() {
 		return tables;
 	}
@@ -64,6 +84,8 @@ public class Database {
 	public void setTables(List<Tables> tables) {
 		this.tables = tables;
 	}
+
+	
 
 	
 
