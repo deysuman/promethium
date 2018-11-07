@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.promethium.helper.Constants;
 import com.promethium.helper.Utils;
+import com.promethium.models.ColumnSchema;
 import com.promethium.models.ConnectionErrorResponse;
 import com.promethium.models.Database;
 import com.promethium.models.ResponseError;
@@ -47,6 +49,10 @@ public class GetSearchMetaData {
 	private static DatabaseMetaData metadata = null;
 	
 	private static List<Tables> table_list = new ArrayList<>();
+	
+	private static int tableCount = 0;
+	
+	private static int tableAvailable = 0;
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(path = "/api/searchtable", method={RequestMethod.POST})
@@ -155,55 +161,33 @@ public class GetSearchMetaData {
 		
 		ResultSet rs = null;
 		
-		try {
+		try {		
 			
-			String[] types = {"TABLE"};
-            rs = metadata.getTables(null, null, "%", types);
-           
-			
-			respone_success.setIs_error(false);
-			respone_success.setIs_result(true);
-			
-//			Statement st = sqlConnection.createStatement();
-//			//String sql = "SELECT * FROM drawings WHERE name LIKE ?";
-//			
-//			String[] types = {"TABLE"};
-//            rs = metadata.getTables(null, null, "%", types);
-//			
-//			String sql ="SHOW TABLES"; 
-//					
-////			
-//			//String sql = "CREATE TABLE IF NOT EXISTS employee ( eid int, name String)";
-//			//String sql = "SELECT * FROM employee";
-//			PreparedStatement preparedStatement = sqlConnection.prepareStatement(sql);
-//			//preparedStatement.setString(1, "%" + keyword);
-//			//preparedStatement.setString(1, "%" + dbName);
-//			
-//			
-//			
-//			ResultSet rs = preparedStatement.executeQuery();
-			
-			
+			List<String> tableNames = new ArrayList<String>();
+
+			String sql = "show tables like ?";
+			PreparedStatement preparedStatement = sqlConnection.prepareStatement(sql);
+			preparedStatement.setString(1, "*" + keyword + "*");			
+			rs = preparedStatement.executeQuery();		
 			
 			System.out.print("Here");
 			
             while (rs.next()) {
             	
-            	Tables table = new Tables();
-	        	table.setTable_name(rs.getString("TABLE_NAME"));
-	        	//table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-	        	table_list.add(table);
-                
+            	tableNames.add(rs.getString(1));
             	System.out.println("table name :" + rs.getString(1));
+            	tableAvailable++;
+            	tableCount++;
                 
                 
             }
 			
 			Database database = new Database();
+			database.setDatabase_name(dbName);
 			
 			/*String url = metadata.getURL();
 			
-			database.setDatabase_name(url.substring(url.lastIndexOf("/") + 1));
+			
 			database.setDatabase_version(metadata.getDatabaseProductVersion());
 			database.setDatabase_jdbc_version(metadata.getDriverVersion());
 			database.setProduct_name(metadata.getDatabaseProductName());
@@ -211,11 +195,25 @@ public class GetSearchMetaData {
 			*/
 			// Run the getDatabaseTableMetaData
 			
-		//	getDatabaseTableMetaData();
+			getDatabaseTableMetaData(tableNames);
 			
-		//	database.setTables(table_list);
-		//	database.setTotal_table(tableAvailable);
-		//	database.setDisplay_table(tableCount);
+			database.setTables(table_list);
+			database.setTotal_table(tableAvailable);
+			database.setDisplay_table(tableCount);
+			
+			if (tableNames.size() > 0) {
+				
+				respone_success.setIs_error(false);
+				respone_success.setIs_result(true);
+				respone_success.setMassage("Get the data successfully");
+				
+			}
+			else {
+				
+				respone_success.setIs_error(true);
+				respone_success.setIs_result(false);
+				respone_success.setMassage("No tables are found");
+			}
 			
 			respone_success.setDatabase_details(database);
 				
@@ -233,6 +231,111 @@ public class GetSearchMetaData {
 		return respone_success;
 	}
 	
+	
+	/**
+	 * 
+	 * @return null
+	 * @throws SQLException
+	 */
+	
+	protected void getDatabaseTableMetaData(List<String> tables)
+    {		
+		table_list.clear();
+		tableCount = 0;
+		
+		ResultSet rs = null;
+		
+        try {
+        	
+        	for (String tableName : tables) {
+        		
+        		Tables table = new Tables();
+	        	table.setTable_name(tableName);
+	        	table.setTable_coulmns(getColumnsMetadata(tableName));
+	        	table_list.add(table);
+        		
+        	}       	            
+           
+        } 
+        
+        catch (Exception e) {
+        	e.printStackTrace();
+        }
+        
+        finally {
+	        try { rs.close(); } catch (Exception ignore) { }
+	    }
+    }
+	
+	
+	/**
+	 * Prints in the console the columns metadata, based in the Arraylist of
+	 * tables passed as parameter.
+	 * 
+	 * @param table_name
+	 * @throws SQLException
+	 * @return Arraylist with the columns
+	 */
+	
+	public static List<ColumnSchema> getColumnsMetadata(String actualTable) {
+		
+		ResultSet rs = null;
+		
+		List<ColumnSchema> column_list = new ArrayList<>();
+		
+		List<String> column_schema = new ArrayList<>();
+		
+		
+		try {
+			
+			rs = metadata.getColumns(null, null, actualTable, null);
+			
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			int columnCount = rsmd.getColumnCount();
+			
+			for (int i = 1; i <= columnCount; i++ ) {
+				
+				  String name = rsmd.getColumnName(i);
+				  
+				  column_schema.add(name);
+				  
+				  System.out.print(name + "\n");
+				  // Do stuff with name
+			}
+			
+			while (rs.next()) {
+				
+				ColumnSchema columns_schema = new ColumnSchema();
+				HashMap<String, String> newMap = new HashMap<String, String>();
+								
+				for (String schema_name : column_schema) {
+					
+					newMap.put(schema_name.toLowerCase(), rs.getString(schema_name));		
+							
+				}
+				
+				columns_schema.setCloumn_schema(newMap);
+				
+				column_list.add(columns_schema);
+				
+			}
+		
+		}
+		
+		catch (SQLException e) {
+         	e.printStackTrace();
+         }
+		
+		finally {
+	        try { rs.close(); } catch (Exception ignore) { }
+	    }
+		
+		
+		return column_list;
+		
+
+	}
 
 	
 }

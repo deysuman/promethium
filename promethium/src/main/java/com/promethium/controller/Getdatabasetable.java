@@ -289,7 +289,7 @@ public class Getdatabasetable {
 			
 			Database database = new Database();
 			String url = metadata.getURL();
-			database.setDatabase_name(url.substring(url.lastIndexOf("/") + 1));
+			database.setDatabase_name(dbName);
 			database.setDatabase_version(metadata.getDatabaseProductVersion());
 			database.setDatabase_jdbc_version(metadata.getDriverVersion());
 			database.setProduct_name(metadata.getDatabaseProductName());
@@ -297,7 +297,7 @@ public class Getdatabasetable {
 			
 			// Run the getDatabaseTableMetaData
 			
-			getDatabaseTableMetaData();
+			getDatabaseTableMetaData2();
 			
 			database.setTables(table_list);
 			database.setTotal_table(tableAvailable);
@@ -317,6 +317,80 @@ public class Getdatabasetable {
 		return respone_success;
 	}
 
+	/**
+	 * 
+	 * @return null
+	 * @throws SQLException
+	 */
+	
+	protected void getDatabaseTableMetaData2()
+    {		
+		table_list.clear();
+		tableCount = 0;
+		
+		ResultSet rs = null;
+		
+		String sql = "";
+		
+		
+        try {  
+        	        	
+        	List<String> tableNames = new ArrayList<String>();
+        	
+        	if(typeofDb == 1) {
+        		
+        		sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ?";
+        		
+        		if (tableLimit != -1) {
+        			
+        			sql += " LIMIT ?";
+        			
+        		}
+        	}
+
+        	else if(typeofDb == 2) {
+        		
+        		sql = "SELECT OBJECT_NAME FROM USER_OBJECTS WHERE OBJECT_TYPE = ?";
+        		
+        		if (tableLimit != -1) {
+        			
+        			sql += " AND ROWNUM <= ?";
+        			
+        		}
+        		
+        	}
+        	
+			PreparedStatement preparedStatement = sqlConnection.prepareStatement(sql);
+			preparedStatement.setString(1,  dbName);	
+			if (tableLimit != -1) {
+				preparedStatement.setInt(2, tableLimit);	
+			}
+			
+			rs = preparedStatement.executeQuery();         
+            while (rs.next()) {
+            	 
+            	System.out.print(rs.getString(1)); 
+            	Tables table = new Tables();
+	        	table.setTable_name(rs.getString("TABLE_NAME"));
+	        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+	        	table_list.add(table);
+	        	tableCount++;
+	        	tableAvailable++;
+
+            	
+            }
+        } 
+        
+        
+            catch (SQLException e) {
+            	e.printStackTrace();
+            }
+        
+        finally {
+	        try { rs.close(); } catch (Exception ignore) { }
+	    }
+    }
+	
 	
 	/**
 	 * 
@@ -334,6 +408,8 @@ public class Getdatabasetable {
         try {        	
              String[] types = {"TABLE"};
              rs = metadata.getTables(null, null, "%", types);
+             
+             System.out.print("Demo");
             
              while (rs.next()) {
             	
@@ -362,6 +438,12 @@ public class Getdatabasetable {
     		        	table_list.add(table);
     		        	
     		        	tableCount++;
+            			
+            		}
+            		
+            		else {
+            			
+            			break;
             			
             		}
             		
