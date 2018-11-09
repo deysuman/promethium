@@ -2,6 +2,7 @@ package com.promethium.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -69,13 +70,10 @@ public class Getdatabasetable {
 		
 	
 	@SuppressWarnings("unchecked")
+	@CrossOrigin(origins = "*")
 	@RequestMapping(path = "/api/getdbtable", method={RequestMethod.POST})
 	@ResponseStatus(value=HttpStatus.OK)
 	public String Getdbtable(@RequestParam("dbname") String _dbName,@RequestParam("dbport") String dbport,@RequestParam("username") String _userName,@RequestParam("password") String _password,@RequestParam("host") String _host,@RequestParam("dbtype") String dbtype,@RequestParam(value = "limit", required = false) String tablelimit) {	
-		
-		
-		
-		
 		
 		dbName = _dbName;
 		dbPort = dbport;

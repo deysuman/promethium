@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 
@@ -37,9 +37,10 @@ public class ElasticClient {
               .put("cluster.name", clusterName)
               .put("node.name", "aKGWEn3").build();
             client = new PreBuiltTransportClient(elasticsearchSettings);
-            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("52.205.181.28"), 9300));
+            client.addTransportAddress(new TransportAddress(InetAddress.getByName("52.205.181.28"), 9200));
         } catch (UnknownHostException e) {
             e.printStackTrace();
+            System.out.print(e.toString());
         }
         return client;
 		

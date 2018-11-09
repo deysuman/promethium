@@ -17,7 +17,10 @@ import com.promethium.client.ElasticClient;
 import com.promethium.models.ConnectionErrorResponse;
 import com.promethium.models.ResponseSuccess;
 
+import java.util.List;
+
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
 
@@ -54,6 +57,14 @@ public class ElasticSearch {
 //	    assertEquals("Doe", type);
 	}
 
+	
+	public void getJson() {
+		
+//		SearchResponse response = client.prepareSearch().execute().actionGet();
+//		List<SearchHit> searchHits = Arrays.asList(response.getHits().getHits());
+//		List<Person> results = new ArrayList<Person>();
+	}
+	
 	@SuppressWarnings("unchecked")
 	@RequestMapping(path = "/api/elasticseach", method={RequestMethod.POST})
 	@ResponseStatus(value=HttpStatus.OK)
@@ -64,7 +75,7 @@ public class ElasticSearch {
 		
 		getClient();
 		
-		givenJsonString_whenJavaObject_thenIndexDocument();
+		//givenJsonString_whenJavaObject_thenIndexDocument();
 		
 		return "deatails";
 	
