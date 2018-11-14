@@ -31,6 +31,8 @@ public class ElasticSearch {
 	
 	
 	// Prepare the client
+	
+	
 	protected void getClient() {
 		
 		client = new ElasticClient().client();
