@@ -318,7 +318,20 @@ public class Getdatabasetable {
 			
 			// Run the getDatabaseTableMetaData
 			
-			getDatabaseTableMetaData2();
+			if (typeofDb >= 1 && typeofDb <= 2) {
+				
+				getDatabaseTableMetaData2();
+				
+				
+			}
+			
+			else {
+				
+				getDatabaseTableMetaData();
+				
+			}
+			
+			
 			
 			database.setTables(table_list);
 			database.setTotal_table(tableAvailable);
@@ -381,6 +394,12 @@ public class Getdatabasetable {
         		
         	}
         	
+        	else if(typeofDb == 3) {
+        		
+        		sql = "select * from dbc.tables where databasename = ?"; 
+        		
+        	}
+        	
 			PreparedStatement preparedStatement = sqlConnection.prepareStatement(sql);
 			preparedStatement.setString(1,  dbName);	
 			if (tableLimit != -1) {
@@ -436,39 +455,49 @@ public class Getdatabasetable {
             	
             	 tableAvailable++;
             	 
+            	 
+            	Tables table = new Tables();
+	        	table.setTable_name(rs.getString("TABLE_NAME"));
+	        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+	        	table_list.add(table);
+	        	
+	        	tableCount++;
+            	 
             	// If we don't get any table limit 
             	 
-            	if (tableLimit == -1) { 
-            	
-		        	Tables table = new Tables();
-		        	table.setTable_name(rs.getString("TABLE_NAME"));
-		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-		        	table_list.add(table);
-            	
-            	}
-            	
-            	// If we gate any table name
-            	
-            	else {
-            		
-            		if (tableCount <= tableLimit) {
-            			
-            			Tables table = new Tables();
-    		        	table.setTable_name(rs.getString("TABLE_NAME"));
-    		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-    		        	table_list.add(table);
-    		        	
-    		        	tableCount++;
-            			
-            		}
-            		
-            		else {
-            			
-            			break;
-            			
-            		}
-            		
-            	}
+            	 
+            	 
+//            	if (tableLimit == -1) { 
+//            	
+//		        	Tables table = new Tables();
+//		        	table.setTable_name(rs.getString("TABLE_NAME"));
+//		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+//		        	table_list.add(table);
+//            	
+//            	}
+//            	
+//            	// If we gate any table name
+//            	
+//            	else {
+//            		
+//            		if (tableCount <= tableLimit) {
+//            			
+//            			Tables table = new Tables();
+//    		        	table.setTable_name(rs.getString("TABLE_NAME"));
+//    		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+//    		        	table_list.add(table);
+//    		        	
+//    		        	tableCount++;
+//            			
+//            		}
+//            		
+//            		else {
+//            			
+//            			break;
+//            			
+//            		}
+//            		
+//            	}
             	
             	
             }
