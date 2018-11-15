@@ -31,6 +31,7 @@ import com.promethium.models.ResponseSuccess;
 import com.promethium.models.Tables;
 import com.promethium.sql.MysqlCon;
 import com.promethium.sql.OracleCon;
+import com.promethium.sql.TeradataCon;
 
 @RestController
 public class Getdatabasetable {
@@ -192,7 +193,7 @@ public class Getdatabasetable {
 		
 		
 		// Getting any error of validPort
-		else if(!(_typeOfDb >= 1 && _typeOfDb <= 2) && !isError) {								
+		else if(!(_typeOfDb >= 1 && _typeOfDb <= 3) && !isError) {								
 			_errorResult.setIs_error(true);
 			_errorResult.setError_msg(constants.INVALID_DATASOURCE);
 			isError = true;
@@ -209,7 +210,7 @@ public class Getdatabasetable {
 			
 		}
 		System.out.print("Values");
-		System.out.print(String.valueOf(_typeOfDb));
+		System.out.print(String.valueOf(error_point));
 				
 		return isError ? false : true;
 		
@@ -246,6 +247,28 @@ public class Getdatabasetable {
 		else if (typeofDb == 2) {
 					
 			OracleCon con = new OracleCon();
+			sqlConnection = con.makeconnection(dbName,dbPort,userName,password,host);
+			
+						
+			if (sqlConnection != null) {
+				
+				try {
+					metadata = sqlConnection.getMetaData();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				result = true;
+			}
+				
+			
+		}
+		
+		
+		else if (typeofDb == 3) {
+			
+			TeradataCon con = new TeradataCon();
 			sqlConnection = con.makeconnection(dbName,dbPort,userName,password,host);
 			
 						

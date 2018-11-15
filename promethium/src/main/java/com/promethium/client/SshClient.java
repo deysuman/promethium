@@ -10,6 +10,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.jcraft.jsch.*;
 import com.promethium.helper.Config;
+import com.promethium.models.ConnectionErrorResponse;
 
 public class SshClient {
 	
@@ -65,6 +66,9 @@ public class SshClient {
 			
 			System.out.print(e.toString());
 			
+			ConnectionErrorResponse error_response = new ConnectionErrorResponse();	
+			error_response.setError_msg(e.toString());
+			
 			e.printStackTrace();
 			
 		}
@@ -95,6 +99,9 @@ public class SshClient {
 			
 			e.printStackTrace();
 			
+			ConnectionErrorResponse error_response = new ConnectionErrorResponse();	
+			error_response.setError_msg(e.toString());
+			
 		}
 		
 		
@@ -107,12 +114,6 @@ public class SshClient {
 		sshClient.getServerPem();
 		sshClient.configureSsh();
 		sshClient.createSession();
-		
-		if(session == null) {
-			
-			System.out.print("Response");
-			
-		}
 		
 		return session;
 		

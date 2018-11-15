@@ -17,6 +17,8 @@ import com.promethium.helper.Constants;
 import com.promethium.models.ConnectionErrorResponse;
 import com.promethium.models.ResponseError;
 import com.promethium.models.ResponseSuccess;
+import com.promethium.models.SuccessResult;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -26,6 +28,8 @@ public class CommandExecutor {
 	public Session session = null;
 	
 	private ResponseError _errorResult = new ResponseError();
+	
+	private SuccessResult _successResult = new SuccessResult();
 	
 	private Gson gson = new Gson();
 
@@ -42,9 +46,10 @@ public class CommandExecutor {
 			
 			_errorResult.setIs_error(true);
 			_errorResult.setError_msg(Constants.EMPTY_CMD);
-			String _errorResults = gson.toJson(_errorResult);
 			
-			return _errorResults;
+			String json_result = gson.toJson(_errorResult);
+			
+			return json_result;
 			
 		}
 		
@@ -61,9 +66,29 @@ public class CommandExecutor {
 			
 			String execute_cmd = executeClient();
 			
+			if(!new ConnectionErrorResponse().getError_msg().isBlank() || !new ConnectionErrorResponse().getError_msg().isEmpty()) {
+				
+				_successResult.setIs_error(true);
+				_successResult.setMassage(new ConnectionErrorResponse().getError_msg());
+				
+				
+			}
+			
+			else {
+				
+				_successResult.setIs_error(true);
+				_successResult.setMassage(execute_cmd.toString());
+				
+				
+			}
+			
+			String json_result = gson.toJson(_successResult);
+			
+			
+			
 			// Getting result
 		
-			return execute_cmd;
+			return json_result;
 			
 		}
 			
@@ -78,6 +103,9 @@ public class CommandExecutor {
 			
 			
 		} catch (JSchException e) {
+			
+			ConnectionErrorResponse error_response = new ConnectionErrorResponse();	
+			error_response.setError_msg(e.toString());
 			
 			System.out.print(e.toString());
 			
