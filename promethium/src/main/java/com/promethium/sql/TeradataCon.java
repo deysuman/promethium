@@ -14,7 +14,7 @@ public class TeradataCon {
 		try{
 			
 			Class.forName("com.teradata.jdbc.TeraDriver");
-			String connectionString = "jdbc:teradata://" + _host + "/database=" +_dbName+",  tmode=ANSI,  charset=UTF8";
+			String connectionString = "jdbc:teradata://"+_host+"/"+_dbName+","+_dbPort;
 	        String user = _userName;
 	        String password = _password;
 			connection = DriverManager.getConnection(connectionString, user, password);						
