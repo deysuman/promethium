@@ -46,7 +46,7 @@ public class Getdatabasetable {
 	
 	private static int tableLimit = -1;
 	
-	private static int tableCount = 0;
+	private static int tableCount = 1;
 	
 	private static int tableAvailable = 0;
 	
@@ -384,7 +384,7 @@ public class Getdatabasetable {
 
         	else if(typeofDb == 2) {
         		
-        		sql = "SELECT OBJECT_NAME FROM USER_OBJECTS WHERE OBJECT_TYPE = ?";
+        		sql = "SELECT t.table_name AS TABLE_NAME FROM all_tab_columns t WHERE t.owner = ?";
         		
         		if (tableLimit != -1) {
         			
@@ -401,21 +401,56 @@ public class Getdatabasetable {
         	}
         	
 			PreparedStatement preparedStatement = sqlConnection.prepareStatement(sql);
-			preparedStatement.setString(1,  dbName);	
-			if (tableLimit != -1) {
-				preparedStatement.setInt(2, tableLimit);	
+			
+			if(typeofDb == 1) {
+				
+				preparedStatement.setString(1,  dbName);
+				
 			}
 			
-			rs = preparedStatement.executeQuery();         
+			else if(typeofDb == 2) {
+				
+				
+				preparedStatement.setString(1,  userName);
+				
+				
+			}
+			
+			else if(typeofDb == 3) {
+				
+				
+				preparedStatement.setString(1,  dbName);
+				
+				
+			}
+			
+			if (tableLimit != -1 && typeofDb != 3) {
+				
+				preparedStatement.setInt(2, tableLimit);	
+				
+			}
+			
+			rs = preparedStatement.executeQuery();
+			
+			System.out.println("After : " + preparedStatement.toString());
+			
+			System.out.println("After : " + dbName);
+
+			
             while (rs.next()) {
             	 
             	System.out.print(rs.getString(1)); 
+            	
+            	
+            	
             	Tables table = new Tables();
 	        	table.setTable_name(rs.getString("TABLE_NAME"));
 	        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
 	        	table_list.add(table);
 	        	tableCount++;
 	        	tableAvailable++;
+	        	
+	        	
 
             	
             }
@@ -456,48 +491,48 @@ public class Getdatabasetable {
             	 tableAvailable++;
             	 
             	 
-            	Tables table = new Tables();
-	        	table.setTable_name(rs.getString("TABLE_NAME"));
-	        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-	        	table_list.add(table);
-	        	
-	        	tableCount++;
+//            	Tables table = new Tables();
+//	        	table.setTable_name(rs.getString("TABLE_NAME"));
+//	        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+//	        	table_list.add(table);
+//	        	
+//	        	tableCount++;
             	 
             	// If we don't get any table limit 
             	 
             	 
             	 
-//            	if (tableLimit == -1) { 
-//            	
-//		        	Tables table = new Tables();
-//		        	table.setTable_name(rs.getString("TABLE_NAME"));
-//		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-//		        	table_list.add(table);
-//            	
-//            	}
-//            	
-//            	// If we gate any table name
-//            	
-//            	else {
-//            		
-//            		if (tableCount <= tableLimit) {
-//            			
-//            			Tables table = new Tables();
-//    		        	table.setTable_name(rs.getString("TABLE_NAME"));
-//    		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
-//    		        	table_list.add(table);
-//    		        	
-//    		        	tableCount++;
-//            			
-//            		}
-//            		
-//            		else {
-//            			
-//            			break;
-//            			
-//            		}
-//            		
-//            	}
+            	if (tableLimit == -1) { 
+            	
+		        	Tables table = new Tables();
+		        	table.setTable_name(rs.getString("TABLE_NAME"));
+		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+		        	table_list.add(table);
+            	
+            	}
+            	
+            	// If we gate any table name
+            	
+            	else {
+            		
+            		if (tableCount <= tableLimit) {
+            			
+            			Tables table = new Tables();
+    		        	table.setTable_name(rs.getString("TABLE_NAME"));
+    		        	table.setTable_coulmns(getColumnsMetadata(rs.getString("TABLE_NAME")));
+    		        	table_list.add(table);
+    		        	
+    		        	tableCount++;
+            			
+            		}
+            		
+            		else {
+            			
+            			break;
+            			
+            		}
+            		
+            	}
             	
             	
             }
